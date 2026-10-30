@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>[hidden]{display:none!important}</style>
+<title>chessVill4 War Edition</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f3;--surface:#fff;--fg:#14161c;--muted:#586070;--line:#d6dae1;--accent:#b42318;--accent-fg:#fff;--blue:#1d3f8c;--ok:#17784a;--king-bg:#1b1e27;--king-fg:#f2f3f6;--sq1:#e7e9ee;--sq2:#b9c0cf;--display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;--mono:'DM Mono',ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1117;--surface:#171b24;--fg:#eceef3;--muted:#9ba3b2;--line:#2a303c;--accent:#ef6a5a;--accent-fg:#14161c;--blue:#86a8f7;--ok:#4cc38a;--king-bg:#2a2f3c;--sq1:#2a303c;--sq2:#3d4658;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1117;--surface:#171b24;--fg:#eceef3;--muted:#9ba3b2;--line:#2a303c;--accent:#ef6a5a;--accent-fg:#14161c;--blue:#86a8f7;--ok:#4cc38a;--king-bg:#2a2f3c;--sq1:#2a303c;--sq2:#3d4658;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--display);font-size:16px;line-height:1.5;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:680px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+.mark{margin:0;font-size:28px;font-weight:500;letter-spacing:-.02em}.mark b{font-weight:800;color:var(--accent)}
+.edition{margin:2px 0 0;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);padding:16px}
+h2{margin:0 0 8px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+p{margin:0 0 10px}
+.btn{font-family:var(--display);font-size:16px;font-weight:700;padding:10px 16px;border:2px solid var(--fg);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,input:focus-visible,.card:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+input[type=text]{font:inherit;padding:9px 10px;border:2px solid var(--line);background:var(--surface);color:var(--fg);width:100%;max-width:240px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.msg{font-weight:700;min-height:24px}.msg.bad{color:var(--accent)}.msg.good{color:var(--ok)}
+.alert{border:2px solid var(--accent);padding:10px 12px;font-weight:700;color:var(--accent)}
+.you{border:2px solid var(--blue)}
+.seats{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.seat{border:1px solid var(--line);padding:6px 10px;font-size:14px;display:grid;grid-template-columns:1fr auto;gap:0 8px;align-items:baseline}
+.seat.turn{border:2px solid var(--blue);padding:5px 9px;background:color-mix(in srgb,var(--blue) 8%,var(--surface))}
+.seat.out{opacity:.45;text-decoration:line-through}
+.seat .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seat .c{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.seat .t{grid-column:1/3;font-size:12px;color:var(--muted)}
+.seat .t b{color:var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.facts .v{font-family:var(--mono);font-size:22px}.facts .s{font-size:13px;color:var(--muted)}
+.chip{display:inline-block;font-family:var(--mono);font-size:14px;padding:2px 8px;background:var(--king-bg);color:var(--king-fg);margin:0 6px 4px 0}
+.hand{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.hand{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{font-family:var(--display);color:var(--fg);background:var(--surface);border:2px solid var(--line);padding:10px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;min-height:128px}
+.card:hover{border-color:var(--blue)}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+.card.k{background:var(--king-bg);color:var(--king-fg)}
+.card .g{font-size:44px;line-height:1.1}.card .i{font-family:var(--mono);font-size:18px}.card .d{font-size:12px;opacity:.75}
+.card .o{position:absolute;top:4px;right:6px;font-family:var(--mono);font-weight:700;background:var(--accent);color:var(--accent-fg);min-width:20px;text-align:center;font-size:13px}
+.card .sp{position:absolute;top:4px;left:6px;font-size:11px;font-weight:700;color:var(--blue)}
+.board{display:grid;grid-template-columns:22px repeat(4,56px);grid-auto-rows:56px;width:max-content}
+.board .lab{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.board .sq{display:flex;align-items:center;justify-content:center;font-size:30px;position:relative}
+.board .sq.a{background:var(--sq1)}.board .sq.b{background:var(--sq2)}
+.board .sq .pv{position:absolute;right:3px;bottom:1px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent)}
+.log{margin:0;padding:0;list-style:none;max-height:240px;overflow:auto;font-size:14px}
+.log li{margin:2px 0}
+.over{border:2px solid var(--ok)}
+.board .sq.chk{background:color-mix(in srgb,var(--accent) 35%,var(--sq1))}
+.note{font-size:13px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:700}
+.spares{font-family:var(--mono);font-size:13px;word-break:break-word}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1 class="mark">chess<b>Vill</b>4</h1>
+    <p class="edition">War Edition</p>
+  </header>
+
+  <section id="start" class="panel">
+    <p>Train your mind's eye. The black king sits on a small board that exists only in your head. Your cards are the white pieces, and the game is to see a mate before anyone else does. Win three games to take the tournament.</p>
+    <div class="row" style="margin-bottom:12px"><label for="nick" class="note">Your name</label><input id="nick" type="text" maxlength="16" value="Host" autocomplete="off"></div>
+    <div class="row" style="margin-bottom:12px"><label for="level" class="note">Bot level</label><select id="level" style="font:inherit;padding:9px 10px;border:2px solid var(--line);background:var(--surface);color:var(--fg)"><option value="pro">Professional</option><option value="normal">Normal (slower to spot mates)</option></select></div>
+    <div class="row"><button class="btn pri" id="go">Start game vs 8 bots</button></div>
+    <p class="note" id="startmsg" style="margin-top:10px"></p>
+  </section>
+
+  <div id="game" hidden class="wrap">
+    <div id="alert" class="alert" hidden></div>
+    <div class="panel" id="turnpanel">
+      <div class="row" style="justify-content:space-between">
+        <div class="msg" id="msg"></div>
+        <div class="row"><span class="note">Your clock</span><span class="c" id="myclock" style="font-family:var(--mono);font-size:24px">15:00</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2 id="tabletitle">Table</h2>
+      <div class="seats" id="seats"></div>
+    </div>
+
+    <div class="panel">
+      <div class="facts">
+        <div><div class="v" id="kingv">-</div><div class="s">Black king</div></div>
+        <div><div class="v" id="topv">-</div><div class="s">Face-up top card</div></div>
+        <div><div class="v" id="deckv">-</div><div class="s">Cards in draw pile</div></div>
+      </div>
+      <div style="margin-top:10px"><span class="note">Cast king cards: </span><span id="cast"></span></div>
+    </div>
+
+    <div class="panel you">
+      <h2>Your hand</h2>
+      <div class="hand" id="hand"></div>
+      <p class="note" id="hint" style="margin:10px 0"></p>
+      <div class="row" id="acts">
+        <button class="btn pri" id="bDiscard">Discard and draw</button>
+        <button class="btn" id="bCast">Cast king</button>
+        <button class="btn pri" id="bAnn">Announce mate</button>
+        <button class="btn pri" id="bReveal">Reveal</button>
+        <button class="btn" id="bPass">Pass</button>
+      </div>
+      <div class="row" id="swaprow" style="margin-top:10px" hidden></div>
+    </div>
+
+    <div class="panel">
+      <label class="row"><input type="checkbox" id="showboard"> <span>Show a board to help me picture it</span></label>
+      <div id="boardbox" hidden style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel">
+      <h2>What has happened</h2>
+      <ol class="log" id="log"></ol>
+    </div>
+
+    <details class="panel"><summary>Spare deck (<span id="sparen">20</span>)</summary><p class="spares" id="spares" style="margin-top:8px"></p></details>
+
+    <div id="winbox" class="panel over" hidden>
+      <h2>The winning mate</h2>
+      <div id="winboard"></div>
+      <p class="msg" id="wintext" style="margin:8px 0"></p>
+      <div class="row"><button class="btn" id="wStart">⏮ Start</button><button class="btn" id="wBack">◀ Back</button><button class="btn pri" id="wNext">Next ▶</button><button class="btn" id="wPlay">Replay</button></div>
+    </div>
+
+    <div id="overbox" class="panel over" hidden>
+      <div class="msg good" id="overmsg"></div>
+      <div class="row" style="margin-top:10px"><button class="btn pri" id="next">Next game</button><button class="btn" id="again">Leave table</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+'use strict';
+var $ = function (id) { return document.getElementById(id); };
+var FILES = ['h', 'g', 'f', 'e'], RANKS = [8, 7, 6, 5];
+var GLYPH = { P: '♙', N: '♘', B: '♗', R: '♖', Q: '♕', K: '♚' };
+var NAMES = { P: 'Pawn', N: 'Knight', B: 'Bishop', R: 'Rook', Q: 'Queen', K: 'King' };
+var S = null, ws = null, rcv = 0, sel = [], mode = 'idle', retry = 0;
+function store(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+var mem = {};
+function token() {
+  var t = load('cv4tok') || mem.tok;
+  if (!t) { var a = new Uint8Array(18); crypto.getRandomValues(a); t = Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join(''); }
+  mem.tok = t; store('cv4tok', t); return t;
+}
+function sq(id) { return { t: id[0], f: FILES.indexOf(id[1]), r: RANKS.indexOf(Number(id[2])) }; }
+function fmt(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60); }
+function url() { return (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/war-ws'; }
+function send(o) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(o)); }
+function say(t, cls) { var m = $('msg'); m.textContent = t; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+
+function connect(first) {
+  var code = load('cv4code');
+  ws = new WebSocket(url());
+  ws.onopen = function () {
+    retry = 0;
+    if (first) send({ t: 'new', name: ($('nick').value || 'Host').trim(), token: token(), level: $('level').value });
+    else if (code) send({ t: 'resume', code: code, token: token() });
+  };
+  ws.onmessage = function (e) {
+    var m; try { m = JSON.parse(e.data); } catch (x) { return; }
+    if (m.t === 'state') { S = m; rcv = performance.now(); store('cv4code', m.code); $('start').hidden = true; $('game').hidden = false; sel = sel.filter(function (u) { return m.hand.some(function (c) { return c.uid === u; }); }); render(); }
+    else if (m.t === 'err') { say(m.msg, 'bad'); }
+    else if (m.t === 'gone') { store('cv4code', null); S = null; $('game').hidden = true; $('start').hidden = false; $('startmsg').textContent = 'That game has ended. Start a new one.'; }
+  };
+  ws.onclose = function () {
+    if (!load('cv4code') && !S) { $('startmsg').textContent = $('startmsg').textContent || 'Could not reach the server. It may be waking up, so try again in a minute.'; $('go').disabled = false; return; }
+    if (S && S.over) return;
+    say('Connection lost. Reconnecting...', 'bad');
+    retry++; setTimeout(function () { connect(false); }, Math.min(5000, 1000 * retry));
+  };
+}
+$('go').addEventListener('click', function () { $('go').disabled = true; $('startmsg').textContent = 'Connecting. If the server was asleep this can take a minute.'; connect(true); });
+$('next').addEventListener('click', function () { sel = []; stopPlay(); send({ t: 'next' }); });
+$('again').addEventListener('click', function () { store('cv4code', null); S = null; sel = []; try { ws.onclose = null; ws.close(); } catch (e) {} $('game').hidden = true; $('start').hidden = false; $('go').disabled = false; $('startmsg').textContent = ''; $('overbox').hidden = true; });
+$('showboard').addEventListener('change', function () { $('boardbox').hidden = !this.checked; drawBoard(); });
+
+function me() { return S.seats[S.you]; }
+function byUid(u) { return S.hand.filter(function (c) { return c.uid === u; })[0]; }
+function isK(c) { return c.id[0] === 'K'; }
+function myTurn() { return S && !S.over && S.turn === S.you && !me().out; }
+function esc(t) { return String(t); }
+
+function render() {
+  if (!S) return;
+  var m = me(), turnSeat = S.seats[S.turn];
+  $('kingv').textContent = S.king;
+  $('topv').textContent = S.top ? S.top : '(none)';
+  $('deckv').textContent = S.deckCount;
+  $('cast').innerHTML = S.cast.length ? S.cast.map(function (c) { return '<span class="chip">' + c + '</span>'; }).join('') : '<span class="note">None yet</span>';
+  $('sparen').textContent = S.spare.length;
+  $('spares').textContent = S.spare.slice().sort().join('  ');
+  $('tabletitle').textContent = 'Table · Game ' + S.gameNo + ' · first to ' + S.target + ' wins';
+  // seats
+  $('seats').innerHTML = S.seats.map(function (s) {
+    var tags = [];
+    if (s.i === S.you) tags.push('you');
+    tags.push(S.scores[s.i] + (S.scores[s.i] === 1 ? ' win' : ' wins'));
+    if (s.announced) tags.push('<b>announced mate in ' + s.announced + '</b>');
+    if (s.out) tags.push('out');
+    else if (s.human && !s.live) tags.push('reconnecting');
+    if (!s.human && s.i !== 0 && !s.out) tags.push('bot');
+    return '<div class="seat' + (s.i === S.turn && !S.over ? ' turn' : '') + (s.out ? ' out' : '') + '" data-i="' + s.i + '"><span class="n"></span><span class="c"></span><span class="t">' + (s.count + ' cards' + (tags.length ? ' · ' + tags.join(' · ') : '')) + '</span></div>';
+  }).join('');
+  Array.prototype.forEach.call($('seats').children, function (el) { el.querySelector('.n').textContent = (S.seats[+el.dataset.i].i === S.turn && !S.over ? '▶ ' : '') + S.seats[+el.dataset.i].name; });
+  clocks();
+  // alerts
+  var others = S.seats.filter(function (s) { return s.announced && s.i !== S.you && !s.out; });
+  var al = $('alert');
+  if (others.length && !S.over) { al.hidden = false; al.textContent = others.map(function (s) { return s.name + ' has announced mate in ' + s.announced; }).join('. ') + '. ' + (m.out ? '' : 'Defend by casting a king card if you hold one.'); }
+  else al.hidden = true;
+  // hand
+  $('hand').innerHTML = '';
+  S.hand.forEach(function (c) {
+    var p = sq(c.id), b = document.createElement('button');
+    b.type = 'button'; b.className = 'card' + (isK(c) ? ' k' : '') + (sel.indexOf(c.uid) >= 0 ? ' sel' : '');
+    var o = sel.indexOf(c.uid) + 1;
+    b.innerHTML = (c.spare ? '<span class="sp">SPARE</span>' : '') + (o ? '<span class="o">' + o + '</span>' : '') + '<span class="g">' + GLYPH[p.t] + '</span><span class="i">' + c.id + '</span><span class="d">' + NAMES[p.t] + '</span>';
+    b.setAttribute('aria-pressed', o ? 'true' : 'false');
+    b.addEventListener('click', function () { var k = sel.indexOf(c.uid); if (k >= 0) sel.splice(k, 1); else sel.push(c.uid); render(); });
+    $('hand').appendChild(b);
+  });
+  // actions
+  var turn = myTurn(), pend = !!m.announced, cards = sel.map(byUid).filter(Boolean);
+  var anyK = cards.some(isK);
+  $('bDiscard').disabled = !(turn && !pend && cards.length === 1);
+  $('bCast').disabled = !(turn && !pend && cards.length === 1 && anyK);
+  var annOk = turn && !pend && cards.length >= 2 && cards.length <= 4 && !anyK;
+  $('bAnn').disabled = !annOk;
+  $('bAnn').textContent = annOk ? 'Announce mate in ' + cards.length + (S.hand.length > cards.length ? ' (discard ' + (S.hand.length - cards.length) + ')' : '') : 'Announce mate';
+  $('bReveal').hidden = !pend; $('bAnn').hidden = pend; $('bDiscard').hidden = pend; $('bCast').hidden = pend; $('bPass').hidden = pend;
+  $('bReveal').disabled = !(turn && pend && cards.length === S.hand.length);
+  // swaps
+  var sw = $('swaprow'); sw.innerHTML = ''; sw.hidden = true;
+  if (turn && cards.length === 1) {
+    var c = cards[0], p = sq(c.id);
+    if (!c.spare && p.t === 'P' && p.r === 0) {
+      var opts = 'NBRQK'.split('').filter(function (t) { return S.spare.indexOf(t + c.id[1] + '8') >= 0; });
+      if (opts.length) {
+        sw.hidden = false; sw.insertAdjacentHTML('beforeend', '<span class="note">Swap ' + c.id + ' for a spare:</span>');
+        opts.forEach(function (t) { var b = document.createElement('button'); b.className = 'btn'; b.textContent = GLYPH[t] + ' ' + t + c.id[1] + '8'; b.addEventListener('click', function () { send({ t: 'act', a: { t: 'swap', uid: c.uid, to: t } }); sel = []; }); sw.appendChild(b); });
+      }
+    }
+  }
+  // message + hint
+  if (S.over) {
+    say('Game over.', ''); $('hint').textContent = '';
+    $('overbox').hidden = false;
+    var w = S.winner;
+    var base = !w ? 'The game has ended.' : (w.seq ? w.name + ' wins game ' + S.gameNo + ' with ' + w.seq.join(', ') + '.' : w.name + ' is the last seat standing and wins game ' + S.gameNo + '.');
+    var top = S.seats.slice().sort(function (a, b) { return S.scores[b.i] - S.scores[a.i]; }).filter(function (x) { return S.scores[x.i] > 0; }).slice(0, 3).map(function (x) { return x.name + ' ' + S.scores[x.i]; }).join(', ');
+    $('overmsg').textContent = (S.champion ? S.champion.name + ' wins the tournament with ' + S.champion.score + ' wins. ' : '') + base + (top ? ' Score: ' + top + '.' : '');
+    $('next').textContent = S.champion ? 'New tournament' : 'Next game';
+  } else {
+    $('overbox').hidden = true;
+    if (m.out) say('You are out of time. You can keep watching.', 'bad');
+    else if (turn) say(pend ? 'Your turn. Reveal your announced mate.' : 'Your turn.', 'good');
+    else say('Waiting for ' + turnSeat.name + '...', '');
+    $('hint').textContent = !turn ? '' : pend
+      ? 'Click your cards in the order you will place them, then press Reveal. You may swap a rank-8 pawn first.'
+      : 'Click a card to pick it. One card to discard or cast, two to four cards (in the order you will place them) to announce a mate. The cards you leave out are discarded.';
+  }
+  // log
+  $('log').innerHTML = ''; S.log.slice().reverse().forEach(function (t) { var li = document.createElement('li'); li.textContent = t; $('log').appendChild(li); });
+  drawBoard(); winPanel();
+}
+
+var stages = [], stageAt = 0, playTimer = null, stagesFor = null;
+function boardHtml(pieces, ksq, chk) {
+  var h = '<div class="board"><div class="lab"></div>';
+  FILES.forEach(function (f) { h += '<div class="lab">' + f + '</div>'; });
+  for (var r = 0; r < 4; r++) {
+    h += '<div class="lab">' + RANKS[r] + '</div>';
+    for (var f = 0; f < 4; f++) {
+      var i = r * 4 + f, inner = '';
+      if (i === ksq) inner = '<span>♚</span>'; else if (pieces[i]) inner = '<span>' + GLYPH[pieces[i]] + '</span>';
+      h += '<div class="sq ' + ((r + f) % 2 ? 'b' : 'a') + (i === ksq && chk ? ' chk' : '') + '">' + inner + '</div>';
+    }
+  }
+  return h + '</div>';
+}
+function sqn(i) { return FILES[i % 4] + RANKS[(i / 4) | 0]; }
+function buildStages(w) {
+  var out = [{ p: new Array(16).fill(null), k: w.king, chk: false, t: 'The king stands on ' + sqn(w.king) + '.' }];
+  w.line.forEach(function (st, n) {
+    out.push({ p: st.place, k: st.king, chk: st.check, t: (n + 1) + '. ' + st.card + (st.mate ? ' is checkmate.' : (st.check ? ' gives check.' : ' is placed.')) });
+    if (st.reply) out.push({ p: st.after, k: st.kingAfter, chk: false, t: '   The king ' + st.reply.text + '.' });
+  });
+  return out;
+}
+function showStage() {
+  var s = stages[stageAt];
+  $('winboard').innerHTML = boardHtml(s.p, s.k, s.chk);
+  $('wintext').textContent = s.t;
+  $('wBack').disabled = $('wStart').disabled = stageAt === 0; $('wNext').disabled = stageAt === stages.length - 1;
+}
+function stopPlay() { if (playTimer) { clearInterval(playTimer); playTimer = null; } }
+function winPanel() {
+  var w = S.over && S.winner && S.winner.line ? S.winner : null;
+  $('winbox').hidden = !w;
+  if (!w) { stages = []; stagesFor = null; stopPlay(); return; }
+  if (stagesFor !== S.code + w.seq.join()) { stagesFor = S.code + w.seq.join(); stages = buildStages(w); stageAt = stages.length - 1; showStage(); }
+}
+$('wStart').addEventListener('click', function () { stopPlay(); stageAt = 0; showStage(); });
+$('wBack').addEventListener('click', function () { stopPlay(); if (stageAt > 0) stageAt--; showStage(); });
+$('wNext').addEventListener('click', function () { stopPlay(); if (stageAt < stages.length - 1) stageAt++; showStage(); });
+$('wPlay').addEventListener('click', function () { stopPlay(); stageAt = 0; showStage(); playTimer = setInterval(function () { if (stageAt < stages.length - 1) { stageAt++; showStage(); } else stopPlay(); }, 1200); });
+function clocks() {
+  if (!S) return;
+  var el = performance.now() - rcv;
+  Array.prototype.forEach.call($('seats').children, function (d) {
+    var i = +d.dataset.i, s = S.seats[i], ms = s.clock - (i === S.turn && !S.over && !s.out ? el : 0);
+    d.querySelector('.c').textContent = fmt(ms);
+  });
+  var m = me(), ms = m.clock - (S.turn === S.you && !S.over && !m.out ? el : 0);
+  $('myclock').textContent = fmt(ms);
+  $('myclock').style.color = ms < 60000 ? 'var(--accent)' : '';
+}
+setInterval(clocks, 250);
+
+function drawBoard() {
+  var box = $('boardbox'); if (!S || box.hidden) return;
+  var k = sq(S.king), placed = {};
+  sel.map(byUid).filter(Boolean).forEach(function (c, n) { if (!isK(c)) { var p = sq(c.id); placed[p.r * 4 + p.f] = { g: GLYPH[p.t], n: n + 1 }; } });
+  var h = '<div class="board"><div class="lab"></div>';
+  FILES.forEach(function (f) { h += '<div class="lab">' + f + '</div>'; });
+  for (var r = 0; r < 4; r++) {
+    h += '<div class="lab">' + RANKS[r] + '</div>';
+    for (var f = 0; f < 4; f++) {
+      var inner = '';
+      if (k.r === r && k.f === f) inner = '♚'; 
+      var pc = placed[r * 4 + f];
+      if (pc) inner += '<span>' + pc.g + '</span><span class="pv">' + pc.n + '</span>';
+      h += '<div class="sq ' + ((r + f) % 2 ? 'b' : 'a') + '">' + inner + '</div>';
+    }
+  }
+  box.innerHTML = h + '</div><p class="note" style="margin-top:8px">The king is shown with the cards you have picked, numbered in your placing order.</p>';
+}
+
+$('bDiscard').addEventListener('click', function () { send({ t: 'act', a: { t: 'discard', uid: sel[0] } }); sel = []; });
+$('bCast').addEventListener('click', function () { send({ t: 'act', a: { t: 'cast', uid: sel[0] } }); sel = []; });
+$('bAnn').addEventListener('click', function () { send({ t: 'act', a: { t: 'announce', keep: sel.slice() } }); sel = []; });
+$('bReveal').addEventListener('click', function () { send({ t: 'act', a: { t: 'reveal', order: sel.slice() } }); sel = []; });
+$('bPass').addEventListener('click', function () { send({ t: 'act', a: { t: 'pass' } }); sel = []; });
+
+if (load('cv4code')) { $('start').hidden = true; $('game').hidden = false; say('Reconnecting...', ''); connect(false); }
+})();
+</script>
+</body>
+</html>
